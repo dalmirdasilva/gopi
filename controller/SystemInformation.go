@@ -5,6 +5,7 @@ import (
   "log"
   "bufio"
   "fmt"
+  "strings"
 )
 
 const CPU_INFO_FILE_PATH = "/proc/cpuinfo"
@@ -25,8 +26,9 @@ func parseCpuInfoFile() {
   }
   scanner := bufio.NewScanner(file)
   for scanner.Scan() {
-    fmt.Println(scanner.Text())
-    fmt.Println("----------------------------")
+    var line string = scanner.Text()
+    var parts []string = strings.Split(line, ":")
+    fmt.Println(parts)
   }
   if err := scanner.Err(); err != nil {
     log.Fatal(err)
