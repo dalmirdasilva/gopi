@@ -2,7 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/.idea/gopi.iml" filepath="$PROJECT_DIR$/.idea/gopi.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/gorpi.iml" filepath="$PROJECT_DIR$/.idea/gorpi.iml" />
     </modules>
   </component>
 </project>
