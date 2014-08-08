@@ -2,7 +2,7 @@ package main
 
 import (
   "fmt"
-  "github.com/dalmirdasilva/gopi/controller"
+  "github.com/dalmirdasilva/gorpi/controller"
 )
 
 func main() {
