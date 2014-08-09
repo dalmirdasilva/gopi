@@ -122,8 +122,10 @@ func (si Info) Memory() (map[string]uint32, error) {
       for j := range parts {
         if (j > 0) {
           part := strings.TrimSpace(parts[j])
-          ui, _ := strconv.ParseUint(part, 10, 32)
-          result[keys[j - 1]] = uint32(ui)
+          if (len(part)) {
+            ui, _ := strconv.ParseUint(part, 10, 32)
+            result[keys[j-1]] = uint32(ui)
+          }
         }
       }
     }
