@@ -1,4 +1,4 @@
-package system
+package system_test
 
 import (
   "github.com/dalmirdasilva/gorpi/core/system"
@@ -10,12 +10,14 @@ const REVISION = system.ModelBRev1
 
 var instance system.Info = system.InfoInstance()
 
-func TestRevision(b *testing.T) {
-  fmt.Println(instance.Revision())
+func TestRevision(t *testing.T) {
+  if (instance.Revision() != REVISION) {
+
+  }
 }
 
-func BenchmarkHello(b *testing.B) {
-  for i := 0; i < b.N; i++ {
+func BenchmarkHello(t *testing.B) {
+  for i := 0; i < t.N; i++ {
     fmt.Sprintf("hello")
   }
 }

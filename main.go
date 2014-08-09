@@ -2,12 +2,10 @@ package main
 
 import (
   "fmt"
-  "github.com/dalmirdasilva/gorpi/controller"
+  "github.com/dalmirdasilva/gorpi/core/system"
 )
 
 func main() {
-  c := controller.SystemInformation{}
-  c.CpuInfo()
-  fmt.Println("Hello!!!")
-
+  sysInfo := system.InfoInstance()
+  fmt.Println(sysInfo.Revision())
 }
