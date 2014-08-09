@@ -7,5 +7,7 @@ import (
 
 func main() {
   sysInfo := system.InfoInstance()
-  fmt.Println(sysInfo.Revision())
+  fmt.Println(sysInfo.Temperature())
+  fmt.Println(sysInfo.CpuInfo())
+  fmt.Println(sysInfo.Memory())
 }

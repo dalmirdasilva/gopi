@@ -3,9 +3,9 @@ package system
 import (
   "github.com/dalmirdasilva/gorpi/util"
   "strings"
-  "errors"
   "strconv"
   "os"
+  "errors"
 )
 
 type Info struct {
@@ -25,24 +25,33 @@ func InfoInstance() Info {
   return Info{}
 }
 
-func (si Info) CpuInfo(entry string) (string, error) {
+func (si Info) CpuInfo() (map[string]string, error) {
   if (si.cpuInfo == nil) {
     si.cpuInfo = make(map[string]string)
     info, err := util.Execute("cat", "/proc/cpuinfo")
-    if (err == nil) {
-      for i := range info {
-        parts := strings.Split(info[i], ":")
-        if (len(parts) >= 2) {
-          key := strings.TrimSpace(parts[0])
-          val := strings.TrimSpace(parts[1])
-          if (key != "" && val != "") {
-            si.cpuInfo[key] = val
-          }
+    if (err != nil) {
+      return nil, err
+    }
+    for i := range info {
+      parts := strings.Split(info[i], ":")
+      if (len(parts) >= 2) {
+        key := strings.TrimSpace(parts[0])
+        val := strings.TrimSpace(parts[1])
+        if (key != "" && val != "") {
+          si.cpuInfo[key] = val
         }
       }
     }
   }
-  value, exists := si.cpuInfo[entry]
+  return si.cpuInfo, nil
+}
+
+func (si Info) CpuInfoEntry(entry string) (string, error) {
+  info, err := si.CpuInfo()
+  if (err != nil) {
+    return "", err
+  }
+  value, exists := info[entry]
   if (!exists) {
     err := errors.New("Entry not found: " + entry)
     return "", err
@@ -50,16 +59,17 @@ func (si Info) CpuInfo(entry string) (string, error) {
   return value, nil
 }
 
+
 func (si Info) Processor() (string, error) {
-  return si.CpuInfo("Processor")
+  return si.CpuInfoEntry("Processor")
 }
 
 func (si Info) BogoMIPS() (string, error) {
-  return si.CpuInfo("BogoMIPS")
+  return si.CpuInfoEntry("BogoMIPS")
 }
 
 func (si Info) CpuFeatures() ([]string, error) {
-  features, err := si.CpuInfo("Features")
+  features, err := si.CpuInfoEntry("Features")
   if (err != nil) {
     return nil, err
   }
@@ -67,35 +77,35 @@ func (si Info) CpuFeatures() ([]string, error) {
 }
 
 func (si Info) CpuImplementer() (string, error) {
-  return si.CpuInfo("CPU implementer")
+  return si.CpuInfoEntry("CPU implementer")
 }
 
 func (si Info) CpuArchitecture() (string, error) {
-  return si.CpuInfo("CPU Architecture")
+  return si.CpuInfoEntry("CPU architecture")
 }
 
 func (si Info) CpuVariant() (string, error) {
-  return si.CpuInfo("CPU variant")
+  return si.CpuInfoEntry("CPU variant")
 }
 
 func (si Info) CpuPart() (string, error) {
-  return si.CpuInfo("CPU part")
+  return si.CpuInfoEntry("CPU part")
 }
 
 func (si Info) CpuRevision() (string, error) {
-  return si.CpuInfo("CPU revision")
+  return si.CpuInfoEntry("CPU revision")
 }
 
 func (si Info) Hardware() (string, error) {
-  return si.CpuInfo("Hardware")
+  return si.CpuInfoEntry("Hardware")
 }
 
 func (si Info) Revision() (string, error) {
-  return si.CpuInfo("Revision")
+  return si.CpuInfoEntry("Revision")
 }
 
 func (si Info) Serial() (string, error) {
-  return si.CpuInfo("Serial")
+  return si.CpuInfoEntry("Serial")
 }
 
 func (si Info) Memory() (map[string]uint32, error) {
