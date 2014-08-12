@@ -6,13 +6,17 @@ import (
   "strconv"
   "os"
   "errors"
+  "io/ioutil"
 )
 
 type Info struct {
+  cpuInfoFilePath string
   cpuInfo map[string]string
 }
 
 type Board int
+
+const DEFAULT_CPU_INFO_PATH = "/proc/cpuinfo"
 
 const (
   Unknown Board = iota
@@ -25,34 +29,39 @@ func InfoInstance() Info {
   return Info{}
 }
 
-func (si Info) CpuInfo() (map[string]string, error) {
-  if (si.cpuInfo == nil) {
-    si.cpuInfo = make(map[string]string)
-    info, err := util.Execute("cat", "/proc/cpuinfo")
-    if (err != nil) {
+func (info *Info) SetCpuInfoFilePath(filePath string) {
+  info.cpuInfoFilePath = filePath
+}
+
+func (info Info) CpuInfo() (map[string]string, error) {
+  if (info.cpuInfo == nil) {
+    info.cpuInfo = make(map[string]string)
+    lines, err := info.readCpuInfoFile()
+    if err != nil {
       return nil, err
     }
-    for i := range info {
-      parts := strings.Split(info[i], ":")
-      if (len(parts) >= 2) {
-        key := strings.TrimSpace(parts[0])
-        val := strings.TrimSpace(parts[1])
-        if (key != "" && val != "") {
-          si.cpuInfo[key] = val
+    for i := range lines {
+      parts := strings.Split(lines[i], ":")
+      if len(parts) >= 2 {
+        key := strings.ToLower(strings.TrimSpace(parts[0]))
+        val := strings.ToLower(strings.TrimSpace(parts[1]))
+        if key != "" && val != "" {
+          info.cpuInfo[key] = val
         }
       }
     }
   }
-  return si.cpuInfo, nil
+  return info.cpuInfo, nil
 }
 
-func (si Info) CpuInfoEntry(entry string) (string, error) {
-  info, err := si.CpuInfo()
-  if (err != nil) {
+func (info Info) CpuInfoEntry(entry string) (string, error) {
+  cpuInfo, err := info.CpuInfo()
+  if err != nil {
     return "", err
   }
-  value, exists := info[entry]
-  if (!exists) {
+  entry = strings.ToLower(entry)
+  value, exists := cpuInfo[entry]
+  if !exists {
     err := errors.New("Entry not found: " + entry)
     return "", err
   }
@@ -60,69 +69,69 @@ func (si Info) CpuInfoEntry(entry string) (string, error) {
 }
 
 
-func (si Info) Processor() (string, error) {
-  return si.CpuInfoEntry("Processor")
+func (info Info) Processor() (string, error) {
+  return info.CpuInfoEntry("processor")
 }
 
-func (si Info) BogoMIPS() (string, error) {
-  return si.CpuInfoEntry("BogoMIPS")
+func (info Info) BogoMIPS() (string, error) {
+  return info.CpuInfoEntry("BogoMIPS")
 }
 
-func (si Info) CpuFeatures() ([]string, error) {
-  features, err := si.CpuInfoEntry("Features")
+func (info Info) CpuFeatures() ([]string, error) {
+  features, err := info.CpuInfoEntry("Features")
   if (err != nil) {
     return nil, err
   }
   return strings.Split(features, " "), nil
 }
 
-func (si Info) CpuImplementer() (string, error) {
-  return si.CpuInfoEntry("CPU implementer")
+func (info Info) CpuImplementer() (string, error) {
+  return info.CpuInfoEntry("CPU implementer")
 }
 
-func (si Info) CpuArchitecture() (string, error) {
-  return si.CpuInfoEntry("CPU architecture")
+func (info Info) CpuArchitecture() (string, error) {
+  return info.CpuInfoEntry("CPU architecture")
 }
 
-func (si Info) CpuVariant() (string, error) {
-  return si.CpuInfoEntry("CPU variant")
+func (info Info) CpuVariant() (string, error) {
+  return info.CpuInfoEntry("CPU variant")
 }
 
-func (si Info) CpuPart() (string, error) {
-  return si.CpuInfoEntry("CPU part")
+func (info Info) CpuPart() (string, error) {
+  return info.CpuInfoEntry("CPU part")
 }
 
-func (si Info) CpuRevision() (string, error) {
-  return si.CpuInfoEntry("CPU revision")
+func (info Info) CpuRevision() (string, error) {
+  return info.CpuInfoEntry("CPU revision")
 }
 
-func (si Info) Hardware() (string, error) {
-  return si.CpuInfoEntry("Hardware")
+func (info Info) Hardware() (string, error) {
+  return info.CpuInfoEntry("Hardware")
 }
 
-func (si Info) Revision() (string, error) {
-  return si.CpuInfoEntry("Revision")
+func (info Info) Revision() (string, error) {
+  return info.CpuInfoEntry("Revision")
 }
 
-func (si Info) Serial() (string, error) {
-  return si.CpuInfoEntry("Serial")
+func (info Info) Serial() (string, error) {
+  return info.CpuInfoEntry("Serial")
 }
 
-func (si Info) Memory() (map[string]uint32, error) {
+func (info Info) Memory() (map[string]uint32, error) {
   result := make(map[string]uint32)
   keys := []string{"total", "used", "free", "shared", "buffers", "cached"}
   lines, err := util.Execute("free", "-b")
-  if (err != nil) {
+  if err != nil {
     return nil, err
   }
   for i := range lines {
     line := lines[i]
-    if (strings.HasPrefix(line, "Mem:")) {
+    if strings.HasPrefix(line, "Mem:") {
       parts := strings.Split(line, " ")
       for j := range parts {
-        if (j > 0) {
+        if j > 0 {
           part := strings.TrimSpace(parts[j])
-          if (len(part) > 0) {
+          if len(part) > 0 {
             ui, _ := strconv.ParseUint(part, 10, 32)
             result[keys[j-1]] = uint32(ui)
           }
@@ -133,41 +142,41 @@ func (si Info) Memory() (map[string]uint32, error) {
   return result, nil
 }
 
-func (si Info) memoryOf(of string) uint32 {
-  memory, err := si.Memory()
-  if (err != nil) {
+func (info Info) memoryOf(of string) uint32 {
+  memory, err := info.Memory()
+  if err != nil {
     return 0
   }
   return memory[of]
 }
 
-func (si Info) MemoryTotal() uint32 {
-  return si.memoryOf("total")
+func (info Info) MemoryTotal() uint32 {
+  return info.memoryOf("total")
 }
 
-func (si Info) MemoryUsed() uint32 {
-  return si.memoryOf("used")
+func (info Info) MemoryUsed() uint32 {
+  return info.memoryOf("used")
 }
 
-func (si Info) MemoryFree() uint32 {
-  return si.memoryOf("free")
+func (info Info) MemoryFree() uint32 {
+  return info.memoryOf("free")
 }
 
-func (si Info) MemoryShared() uint32 {
-  return si.memoryOf("shared")
+func (info Info) MemoryShared() uint32 {
+  return info.memoryOf("shared")
 }
 
-func (si Info) MemoryBuffers() uint32 {
-  return si.memoryOf("buffers")
+func (info Info) MemoryBuffers() uint32 {
+  return info.memoryOf("buffers")
 }
 
-func (si Info) MemoryCached() uint32 {
-  return si.memoryOf("cached")
+func (info Info) MemoryCached() uint32 {
+  return info.memoryOf("cached")
 }
 
-func (si Info) BoardType() Board {
-  revision, err := si.Revision()
-  if (err == nil) {
+func (info Info) BoardModel() Board {
+  revision, err := info.Revision()
+  if err == nil {
     switch revision {
     case "0002", "0003":
       return ModelBRev1
@@ -182,19 +191,19 @@ func (si Info) BoardType() Board {
   return Unknown
 }
 
-func (si Info) Temperature() float32 {
+func (info Info) Temperature() float32 {
   cmd := "/opt/vc/bin/vcgencmd"
   _, err := os.Stat(cmd)
-  if (os.IsNotExist(err)) {
+  if os.IsNotExist(err) {
     return 0.0
   }
   lines, err := util.Execute(cmd, "measure_temp")
-  if (err != nil) {
+  if err != nil {
     return 0.0
   }
   for i := range lines {
     line := lines[i]
-    if (strings.HasPrefix(line, "temp=")) {
+    if strings.HasPrefix(line, "temp=") {
       parts := strings.FieldsFunc(line, func(r rune) bool {
         switch r {
         case '=', '\'':
@@ -210,16 +219,16 @@ func (si Info) Temperature() float32 {
 }
 
 
-func (si Info) ClockFrequency(target string) uint64 {
+func (info Info) ClockFrequency(target string) uint64 {
   cmd := "/opt/vc/bin/vcgencmd"
   _, err := os.Stat(cmd)
-  if (os.IsNotExist(err)) {
+  if os.IsNotExist(err) {
     return 0
   }
   lines, err := util.Execute(cmd, "measure_clock", strings.TrimSpace(target))
   for i := range lines {
     line := lines[i]
-    if (strings.HasPrefix(line, "frequency")) {
+    if strings.HasPrefix(line, "frequency") {
       parts := strings.Split(line, "=")
       freq, _ := strconv.ParseUint(parts[1], 10, 64)
       return uint64(freq)
@@ -228,50 +237,61 @@ func (si Info) ClockFrequency(target string) uint64 {
   return 0
 }
 
-func (si Info) ClockFrequencyArm() uint64 {
-  return si.ClockFrequency("arm")
+func (info Info) ClockFrequencyArm() uint64 {
+  return info.ClockFrequency("arm")
 }
 
-func (si Info) ClockFrequencyCore() uint64 {
-  return si.ClockFrequency("core")
+func (info Info) ClockFrequencyCore() uint64 {
+  return info.ClockFrequency("core")
 }
 
-func (si Info) ClockFrequencyH264() uint64 {
-  return si.ClockFrequency("h264")
+func (info Info) ClockFrequencyH264() uint64 {
+  return info.ClockFrequency("h264")
 }
 
-func (si Info) ClockFrequencyISP() uint64 {
-  return si.ClockFrequency("isp")
+func (info Info) ClockFrequencyISP() uint64 {
+  return info.ClockFrequency("isp")
 }
 
-func (si Info) ClockFrequencyV3D() uint64 {
-  return si.ClockFrequency("v3d")
+func (info Info) ClockFrequencyV3D() uint64 {
+  return info.ClockFrequency("v3d")
 }
 
-func (si Info) ClockFrequencyUART() uint64 {
-  return si.ClockFrequency("uart")
+func (info Info) ClockFrequencyUART() uint64 {
+  return info.ClockFrequency("uart")
 }
 
-func (si Info) ClockFrequencyPWM() uint64 {
-  return si.ClockFrequency("pwm")
+func (info Info) ClockFrequencyPWM() uint64 {
+  return info.ClockFrequency("pwm")
 }
 
-func (si Info) ClockFrequencyEMMC() uint64 {
-  return si.ClockFrequency("emmc")
+func (info Info) ClockFrequencyEMMC() uint64 {
+  return info.ClockFrequency("emmc")
 }
 
-func (si Info) ClockFrequencyPixel() uint64 {
-  return si.ClockFrequency("pixel")
+func (info Info) ClockFrequencyPixel() uint64 {
+  return info.ClockFrequency("pixel")
 }
 
-func (si Info) ClockFrequencyVEC() uint64 {
-  return si.ClockFrequency("vec")
+func (info Info) ClockFrequencyVEC() uint64 {
+  return info.ClockFrequency("vec")
 }
 
-func (si Info) ClockFrequencyHDMI() uint64 {
-  return si.ClockFrequency("hdmi")
+func (info Info) ClockFrequencyHDMI() uint64 {
+  return info.ClockFrequency("hdmi")
 }
 
-func (si Info) ClockFrequencyDPI() uint64 {
-  return si.ClockFrequency("dpi")
+func (info Info) ClockFrequencyDPI() uint64 {
+  return info.ClockFrequency("dpi")
+}
+
+func (info Info) readCpuInfoFile() ([]string, error) {
+  if info.cpuInfoFilePath == "" {
+    info.cpuInfoFilePath = DEFAULT_CPU_INFO_PATH
+  }
+  content, err := ioutil.ReadFile(info.cpuInfoFilePath)
+  if err != nil {
+    return nil, err
+  }
+  return strings.Split(string(content), "\n"), nil
 }
