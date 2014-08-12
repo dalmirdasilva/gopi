@@ -8,5 +8,3 @@ const PINS = [
 ]
 
 func NewPin(n int) {
-	
-}
