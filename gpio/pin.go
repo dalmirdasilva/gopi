@@ -4,11 +4,10 @@ type Pin struct {
   Number int
 }
 
-func (p Pin) SetState(boolean state) {
+func (p Pin) SetState(state bool) {
 }
 
-func (p Pin) State() (boolean state) {
-  
-  return false
+func (p Pin) State() bool {
+  return true
 }
 
