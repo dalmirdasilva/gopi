@@ -1,8 +1,10 @@
 <component name="ProjectDictionaryState">
   <dictionary name="dalmir">
     <words>
+      <w>gpio</w>
       <w>prot</w>
       <w>rdwr</w>
+      <w>sudo</w>
       <w>unmap</w>
     </words>
   </dictionary>
