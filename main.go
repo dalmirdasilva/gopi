@@ -1,13 +1,17 @@
 package main
 
 import (
+  "github.com/dalmirdasilva/gorpi/core/board"
   "fmt"
-  "github.com/dalmirdasilva/gorpi/core/system"
 )
 
 func main() {
-  sysInfo := system.InfoInstance()
-  fmt.Println(sysInfo.Temperature())
-  fmt.Println(sysInfo.CpuInfo())
-  fmt.Println(sysInfo.Memory())
+  p := board.Peripheral{}
+  p.Address = 0x200000
+  b := board.BoardInstance()
+  mapped := b.MapPeripheral(&p)
+  if mapped != nil {
+    fmt.Println("Cannot map.")
+  }
+  fmt.Println(p.Memory)
 }
