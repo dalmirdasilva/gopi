@@ -1,16 +1,18 @@
 package main
 
 import (
-  "github.com/dalmirdasilva/gorpi/core/board"
   "fmt"
+  "github.com/dalmirdasilva/gorpi/gpio"
 )
 
 func main() {
-  p := board.Peripheral{0x200000}
-  err := p.Open()
-  if err != nil {
-    fmt.Println("Cannot map.")
-    return
-  }
-  fmt.Println(p.Memory)
+  g := gpio.GetInstance()
+  pin21 := g.NewPin(21)
+  pin21.Set()
+  pin22 := g.NewPin(22)
+  pin22.Clear()
+  pin23 := g.NewPin(23)
+  pin23.Set()
+
+  fmt.Println("done")
 }
