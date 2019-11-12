@@ -1,6 +1,7 @@
 package gpio
 
 import (
+  "fmt"
   "github.com/dalmirdasilva/gorpi/core/board"
   "sync"
 )
@@ -56,7 +57,10 @@ var gpio Gpio
 func GetInstance() Gpio {
   gpioContext.Do(func () {
     p := board.NewPeripheral(ADDRESS)
-    p.Open()
+    err := p.Open()
+    if err != nil {
+      fmt.Println(err)
+    }
     gpio = Gpio{p}
   })
   return gpio

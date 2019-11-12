@@ -2,10 +2,10 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="bbf01b62-35d4-49bc-bcbb-cd03bdecd693" name="Default" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/gorpi.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/gorpi.iml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/gpio/gpio.go" beforeDir="false" afterPath="$PROJECT_DIR$/gpio/gpio.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/projectFilesBackup/.idea/workspace.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/projectFilesBackup1/.idea/gorpi.iml" beforeDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
