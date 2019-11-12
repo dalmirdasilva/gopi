@@ -123,19 +123,19 @@ func (g *Gpio) safeRead(address int) uint {
   b1 := g.peripheral.Memory[address + 1]
   b2 := g.peripheral.Memory[address + 2]
   b3 := g.peripheral.Memory[address + 3]
-  result = b3
+  result = uint(b3)
   result <<= 8
-  result |= b2
+  result |= uint(b2)
   result <<= 8
-  result |= b1
+  result |= uint(b1)
   result <<= 8
-  result |= b0
+  result |= uint(b0)
   return result
 }
 
 func (g *Gpio) safeWrite(address int, value uint) {
-  g.peripheral.Memory[address + 0] = value & 0xff
-  g.peripheral.Memory[address + 1] = (value >> 8) & 0xff
-  g.peripheral.Memory[address + 2] = (value >> 16) & 0xff
-  g.peripheral.Memory[address + 3] = (value >> 24) & 0xff
+  g.peripheral.Memory[address + 0] = byte(value & 0xff)
+  g.peripheral.Memory[address + 1] = byte((value >> 8) & 0xff)
+  g.peripheral.Memory[address + 2] = byte((value >> 16) & 0xff)
+  g.peripheral.Memory[address + 3] = byte((value >> 24) & 0xff)
 }
